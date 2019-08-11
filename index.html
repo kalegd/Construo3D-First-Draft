@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Welcome to my WebXR Experiments</title>
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+
+    <style>
+      body {
+        background-color: #FFFFFF;
+        overflow: hidden;
+        margin: 0px;
+        text-align:center;
+      }
+      canvas {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+      #container {
+        float: left;
+      }
+      #skybox-mode, #floor-mode, #asset-mode {
+        float: right;
+        width: 50%;
+        height: 100vh;
+        font-size: 18px;
+        color: white;
+        background-color: black;
+      }
+      #main-menu.fade-in {
+        visibility: visible;
+        opacity: 1;
+        transition: opacity 500ms linear;
+      }
+      #main-menu.fade-out {
+        visibility: hidden;
+        opacity: 0;
+        transition: visibility 0s 500ms, opacity 500ms linear;
+      }
+      #start {
+        position: absolute;
+        top: 0px;
+        height: 100%;
+        width: 100%;
+        z-index: 100;
+        color: #FFF;
+        font-size: 50px;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: block;
+        justify-content: center;
+        align-items: center;
+      }
+      #main-menu {
+        position: absolute;
+        top: 0px;
+        height: 100%;
+        width: 100%;
+        z-index: 100;
+        color: #BBBBBB;
+        font-size: 24px;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: block;
+        justify-content: center;
+        align-items: center;
+        opacity: 0;
+      }
+      #asset-mode {
+        color: #BBBBBB;
+        overflow: auto;
+      }
+      #active-asset-delete {
+        font-size: 18px;
+      }
+      #active-asset-delete:focus {
+        color: red;
+      }
+      .selected-menu-item, .selected-asset-item {
+        text-decoration: underline;
+        color: #FFF;
+      }
+      .selected-image {
+        border: 5px solid blue;
+      }
+      .controls {
+        display: inline-table;
+        font-size: 24px;
+      }
+      .control-key {
+        display: inline-block;
+        width: 40px;
+      }
+      .control-key span {
+        border-style: solid;
+        width: 30px;
+        height: 30px;
+        font-size: 24px;
+        display: table-cell;
+      }
+      .control-row {
+        height: 60px;
+      }
+      .control-divide {
+        vertical-align: middle;
+        padding-left: 10px;
+        padding-right: 10px;
+        padding-bottom: 10px;
+      }
+    </style>
+    <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/106/three.min.js"></script>
+    <script src="https://cdn.rawgit.com/mrdoob/three.js/r106/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://cdn.rawgit.com/mrdoob/three.js/r106/examples/js/controls/PointerLockControls.js"></script>-->
+    <script src="scripts/three.min.js"></script>
+    <!--<script src="scripts/WebVR.js"></script>-->
+    <script src="scripts/GLTFLoader.js"></script>
+    <script src="scripts/PointerLockControls.js"></script>
+    <script src="scripts/Utilities.js"></script>
+    <script src="scripts/MainMenu.js"></script>
+    <script src="scripts/FloorMode.js"></script>
+    <script src="scripts/SkyboxMode.js"></script>
+    <script src="scripts/AssetMode.js"></script>
+    <script src="scripts/Logo.js"></script>
+    <script src="scripts/Skybox.js"></script>
+    <script src="scripts/Floor.js"></script>
+    <script src="scripts/GLTFAsset.js"></script>
+    <script src="models/point_light/PointLight.js"></script>
+    <script src="models/text_wall/TextWall.js"></script>
+    <script src="scripts/stats.min.js"></script>
+  </head>
+  <body>
+    <div id="start">
+      <br>
+      <table class="controls">
+        <tr class=".control-row">
+          <td style="vertical-align: middle;">Quit/Enable Mouse</td>
+          <td class="control-divide">-</td>
+          <td style="display: flex;"><div class="control-key"><span style="font-size: 18px; vertical-align: middle;">Esc</span></div></td>
+        </tr>
+        <tr class=".control-row">
+          <td style="vertical-align: middle;">Menu</td>
+          <td class="control-divide">-</td>
+          <td style="display: flex;"><div class="control-key"><span>M</span></div></td>
+        </tr>
+        <tr class=".control-row">
+          <td style="vertical-align: middle;">Back</td>
+          <td class="control-divide">-</td>
+          <td style="display: flex;"><div class="control-key"><span>B</span></div></td>
+        </tr>
+        <tr class=".control-row">
+          <td style="vertical-align: middle;">Move</td>
+          <td class="control-divide">-</td>
+          <td>
+            <div class="control-key"><span>W</span></div>
+            <div class="control-key"><span>A</span></div>
+            <div class="control-key"><span>S</span></div>
+            <div class="control-key"><span>D</span></div>
+            <span style="vertical-align: super;">/Arrow Keys</span>
+          </td>
+        </tr>
+      </table>
+      <br>
+      <br>
+      <div>Click to get started</div>
+    </div>
+    <div id="main-menu"></div>
+    <div id="container"></div>
+    <div id="floor-mode">
+      <div id="select-floor"></div>
+      <div id="configure-floor">
+        <h2>Configure</h2>
+        <p>Width: <input id="floor-width" style="text-align:right" value="100"></p>
+        <p>Height: <input id="floor-height" style="text-align:right" value="100"></p>
+      </div>
+    </div>
+    <div id="skybox-mode">
+      <div id="select-skybox"></div>
+      <div id="configure-skybox">
+        <h2>Configure</h2>
+        <p>Initial Rotation (X): <input id="skybox-initial-rotation-x" style="text-align:right" value="0"> degrees </p>
+        <p>Initial Rotation (Y): <input id="skybox-initial-rotation-y" style="text-align:right" value="0"> degrees </p>
+        <p>Initial Rotation (Z): <input id="skybox-initial-rotation-z" style="text-align:right" value="0"> degrees </p>
+      </div>
+    </div>
+    <div id="asset-mode">
+      <div id="select-asset-mode">
+        <h2>Assets</h2>
+        <p>Add</p>
+        <p>Edit</p>
+      </div>
+      <div id="add-asset"></div>
+      <div id="select-asset"></div>
+      <div id="configure-asset"></div>
+    </div>
+    <script src="scripts/construo.js"></script>
+  </body>
+</html> 
+
